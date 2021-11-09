@@ -1,5 +1,18 @@
 <?php
 
+// retorna configurações
+if (!function_exists('config'))
+{
+	function config($type, $key)
+	{
+		if(!isset($framework_config))
+			$framework_config = include __DIR__.'/../config/'.$type.'.php';
+
+		if(isset($key))
+			return array_key_exists($key, $framework_config) ? $framework_config[$key] : null;
+	}
+}
+
 // retorna configurações da aplicação
 if (!function_exists('app'))
 {
@@ -23,9 +36,12 @@ if (!function_exists('view'))
             foreach($values as $responseName => $responseValue)
                 $$responseName = $responseValue;
 
+        // pega pasta padrão de views
+        $defaultPath = config('view', 'default_path');
+
         // retorna view 
         $view = str_replace('.', '/', $view);
-        include '../views/'.$view.'.php';
+        include '../'.$defaultPath.'/'.$view.'.php';
 
         // limpa session de inputs
         remove_session('old_fields');
@@ -59,7 +75,7 @@ if (!function_exists('old'))
 {
     function old($inputName)
     {
-        $old_fields = get_session('old_fields');
+        $old_fields = session('old_fields');
 
         echo isset($old_fields[$inputName]) ? $old_fields[$inputName] : '';
     }
@@ -136,19 +152,6 @@ if (!function_exists('partial'))
     }
 }
 
-// retorna objeto request
-if (!function_exists('request'))
-{
-    function request()
-    {
-        if(!get_session('old_fields')) {
-            put_session('old_fields', $_POST);
-        }
-        
-        return new \Core\Request;
-    }
-}
-
 // retorna mensagem de erro de um input enviado
 if (!function_exists('error_field'))
 {
@@ -188,9 +191,9 @@ if(!function_exists('start_session'))
 }
 
 // pega valor da session
-if(!function_exists('get_session'))
+if(!function_exists('session'))
 {
-    function get_session($key)
+    function session($key)
     {
         return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
     }
@@ -226,6 +229,3 @@ if(!function_exists('remove_session'))
     }
 }
     
-
-
-
